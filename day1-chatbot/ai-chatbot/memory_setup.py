@@ -20,7 +20,7 @@ config = {
 
 memory = Memory.from_config(config)
 
-# memory.add("My name is Alex and I study at DigiPen", user_id="student1")
+memory.add("My name is Alfie, and I'm a student at DigiPen", user_id="student1")
 
-# results = memory.search("What is my name?", filters={"user_id": "student1"})
-# print(results)
+results = memory.search("What is my name?", filters={"user_id": "student1"})
+print(results)
