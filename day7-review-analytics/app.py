@@ -82,34 +82,45 @@ else:
     generate structured takeaways, and catalog the entry into the database repository automatically.
     """)
 
-    uploaded_file = st.file_uploader("Drop customer feedback .txt file here", type=["txt"])
+    upload_tab, manual_tab = st.tabs(["📁 Upload .txt File", "✍️ Type Manually"])
 
-    if uploaded_file is not None:
-        try:
-            review_text = uploaded_file.read().decode("utf-8")
+    review_text = None
+    source_name = None
 
-            with st.expander("📄 Review File Context Preview", expanded=False):
-                st.text(review_text)
+    with upload_tab:
+        uploaded_file = st.file_uploader("Drop customer feedback .txt file here", type=["txt"])
+        if uploaded_file is not None:
+            try:
+                review_text = uploaded_file.read().decode("utf-8")
+                source_name = uploaded_file.name
+                with st.expander("📄 Review File Context Preview", expanded=False):
+                    st.text(review_text)
+            except Exception as file_err:
+                st.error(f"❌ Structural Read Error: {file_err}")
 
-            st.markdown("---")
+    with manual_tab:
+        manual_text = st.text_area("Paste or type customer feedback here", height=200)
+        if manual_text.strip():
+            review_text = manual_text
+            source_name = f"manual-entry-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
 
-            if st.button("🚀 Execute Sentiment Analysis", use_container_width=True):
-                with st.spinner("Gemini is interpreting text blocks and mapping score parameters..."):
-                    try:
-                        clean_summary, rating, category = analyze_review_sentiment(review_text)
-                        save_summary(uploaded_file.name, clean_summary, rating, category)
+    if review_text:
+        st.markdown("---")
 
-                        st.success(f"✅ Processing Finalized! Saved under **{category}** classification category.")
+        if st.button("🚀 Execute Sentiment Analysis", use_container_width=True):
+            with st.spinner("Gemini is interpreting text blocks and mapping score parameters..."):
+                try:
+                    clean_summary, rating, category = analyze_review_sentiment(review_text)
+                    save_summary(source_name, clean_summary, rating, category)
 
-                        m_col, d_col = st.columns([1, 4])
-                        m_col.metric(label="Calculated Score", value=f"{rating} / 10")
-                        d_col.info(f"Database Router Pipeline assigned this to the **{category}** segment container.")
+                    st.success(f"✅ Processing Finalized! Saved under **{category}** classification category.")
 
-                        st.markdown("### 📋 AI Generated Synthesis Review")
-                        st.markdown(clean_summary)
+                    m_col, d_col = st.columns([1, 4])
+                    m_col.metric(label="Calculated Score", value=f"{rating} / 10")
+                    d_col.info(f"Database Router Pipeline assigned this to the **{category}** segment container.")
 
-                    except Exception as api_err:
-                        st.error(f"❌ Cloud API Request Interrupted: {api_err}")
+                    st.markdown("### 📋 AI Generated Synthesis Review")
+                    st.markdown(clean_summary)
 
-        except Exception as file_err:
-            st.error(f"❌ Structural Read Error: {file_err}")
+                except Exception as api_err:
+                    st.error(f"❌ Cloud API Request Interrupted: {api_err}")
