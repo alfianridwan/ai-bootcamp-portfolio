@@ -1,0 +1,5 @@
+litellm>=1.0.0
+python-dotenv>=1.0.0
+pypdf>=4.0.0
+# Streamlit UI (stretch goal — run with: streamlit run app.py):
+streamlit>=1.30.0
